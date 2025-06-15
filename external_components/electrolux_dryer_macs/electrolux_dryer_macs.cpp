@@ -99,31 +99,36 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
       break;
       
     case MACS_MESSAGE_TYPE_DRYER_STATE:
-#ifdef USE_SENSOR
-      if (data[2] == MACS_DRYER_STATE_STANDBY)
-        if (this->remaining_time_sensor_) 
-          this->remaining_time_sensor_->publish_state(0);
-#endif
-
-#ifdef USE_BINARY_SENSOR
       switch (data[2]) {
         case MACS_DRYER_STATE_STANDBY:
+#ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(0);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(0);
+          if (this->delicate_mode_binary_sensor_) this->delicate_mode_binary_sensor_->publish_state(NAN);
+#endif
+#ifdef USE_SENSOR
+          if (this->remaining_time_sensor_) this->remaining_time_sensor_->publish_state(NAN);
+          if (this->program_dryness_level_sensor_) this->program_dryness_level_sensor_->publish_state(NAN);
+          if (this->start_delay_time_sensor_) this->start_delay_time_sensor_->publish_state(NAN);
+          if (this->selected_program_number_sensor_) this->selected_program_number_sensor_->publish_state(NAN);
+#endif
           break;
         case MACS_DRYER_STATE_IDLE:
         case MACS_DRYER_STATE_PAUSED:
+#ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(1);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(0);
+#endif
           break;
         case MACS_DRYER_STATE_DRYING:
+#ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(1);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(1);
+#endif
           break;
         default:
           break;
       }
-#endif
       break;
       
     case MACS_MESSAGE_TYPE_DRYER_PROGRAM_SET:
