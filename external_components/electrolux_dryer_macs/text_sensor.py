@@ -4,16 +4,16 @@ import esphome.config_validation as cv
 
 from . import CONF_ELECTROLUX_DRYER_MACS_ID, ElectroluxDryerMacsComponent
 
-CONF_SELECTED_PROGRAM_NAME = "selected_program_name"
+CONF_LAST_RAW_MESSAGE = "last_raw_message"
 
 TYPES = [
-    CONF_SELECTED_PROGRAM_NAME
+    CONF_LAST_RAW_MESSAGE
 ]
 
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(CONF_ELECTROLUX_DRYER_MACS_ID): cv.use_id(ElectroluxDryerMacsComponent),
-        cv.Optional(CONF_SELECTED_PROGRAM_NAME): text_sensor.text_sensor_schema(),
+        cv.Optional(CONF_LAST_RAW_MESSAGE): text_sensor.text_sensor_schema(),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 

@@ -21,7 +21,7 @@ esp8266:
 logger:
 #  hardware_uart: UART1
   baud_rate: 0
-  level: DEBUG
+  level: INFO
 
 # Enable Home Assistant API
 api:
@@ -118,4 +118,9 @@ text_sensor:
   - platform: template
     id: dryer_selected_program_name
     name: "Selected program"
+
+  - platform: electrolux_dryer_macs
+    last_raw_message:
+      name: "Last raw message"
+      entity_category: "diagnostic"
 

@@ -25,7 +25,7 @@ class ElectroluxDryerMacsComponent : public Component, public uart::UARTDevice {
 #endif
 
 #ifdef USE_TEXT_SENSOR
-  SUB_TEXT_SENSOR(selected_program_name)
+  SUB_TEXT_SENSOR(last_raw_message)
 #endif
 
 #ifdef USE_BINARY_SENSOR
