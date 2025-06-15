@@ -23,19 +23,21 @@ Actually this is similar to UART with some quirks.
 * Usually there are two or more MACS connectors on the boards that are all connected
 
 The MACS port is the interconnect between the boards and also there are the NIU and NIUX Wi-Fi modules that also connects here.
-The pinout from the [NIU User Manual](https://fccid.io/2ABHC-5430042/User-Manual/User-manual-2359011.pdf) shows different pinout than what I found. 
-Also the Electrolux's debugger tool's [docs](https://sidekick.electrolux.com/sidekickportal/Media/ContentImages/AMITechnicalGuide/AMI%20Technical%20Guide%20v1.1.pdf) have this pinout on page 15.
+The pinout from the [NIU User Manual](https://fccid.io/2ABHC-5430042/User-Manual/User-manual-2359011.pdf) shows the same pinout that I found. 
+Also the Electrolux's debugger tool's (called Sidekick) [docs](https://sidekick.electrolux.com/sidekickportal/Media/ContentImages/AMITechnicalGuide/AMI%20Technical%20Guide%20v1.1.pdf) have this pinout on page 15.
 
-The suitable connectors are the Stocko MFMP 7238-004-061-960-000-00-G and Lumberg 3517-04-K01 (RAST 2.5, 4-pin). Actually the keying matches with the connector I found and the models are from the NIU docs.
+The suitable connectors are the Stocko MFMP 7238-004-061-960-000-00-G and Lumberg 3517-04-K01 (RAST 2.5, 4-pin). These were mentioned in the docs thus the keying should match with the connector.
 
-Pinout from the NIU and Sidekick docs:
+Pinout:
+```
 1 - +12V
   --key--
 2 - +5V
 3 - Data
 4 - GND
+```
 
-Currently I only want to listen on the bus so connect the line to the Rx only.
+Currently I only want to listen on the bus so I connected the line to the Rx only.
 
 ### L2. Framing
 
@@ -44,7 +46,7 @@ Two types of frames:
 1. Message frame
 2. ACK frame
 
-Message frame format: `9C <target> <source> <length> <data> <checksum>` 
+Message frame format: `9C <target> <source> <length> <data>... <checksum>` 
 where target, source, length, checksum are 1 bytes.
 
 In the MACS / DAAS protocols, every panel has its own 1-byte address. In my situation, the main board is `0x22` and the front panel is `0x2A`. Also one can send broadcast message with the target address `0x00`.
@@ -90,12 +92,10 @@ Below all the numbers are purely the data field inside the message frame. All he
             1x - when rapid
             8x - when cotton cupboard dry
             x2 - delicate mode - wool, delicates, duvet, easy iron programs use it by default; cotton cupboard dry sets it always
-               00 - ??? when duvet
-               01 - ??? when not duvet
-                  00 - time as specified in program
-                  xx - custom program time in minutes
-                  0A - 10 minutes
-                  14 - 20 minutes
+               00 00 - time as specified in program
+               xx xx - custom program time in minutes
+               00 0A - 10 minutes
+               00 14 - 20 minutes
                      00 - no delay
                      xx - delay n * 30 min (max 20 hr?)
                      01 - delay 30 min
@@ -145,7 +145,7 @@ Below all the numbers are purely the data field inside the message frame. All he
 ```                                                    
 
 ```
-55 - program change response ?
+55 - program change response ? (only cotton, wool, time programs)
    03 
       00 
          00 
@@ -174,8 +174,7 @@ Below all the numbers are purely the data field inside the message frame. All he
 56 - displayed program time
    03
       00 
-         00 
-            0A - time 10 minutes
+         00 0A - time 10 minutes
          00 00 - display turn on, empty
          FF FF - display turn off
 ```
