@@ -15,10 +15,10 @@ esp8266:
   framework:
     version: recommended
 
-# Enable logging
+# Disable DEBUG logs, because ESP8266 hangs
 logger:
   baud_rate: 0
-  level: DEBUG
+  level: INFO
 
 # Enable Home Assistant API
 api:
@@ -48,7 +48,7 @@ uart:
   id: uart_macs
   tx_pin: 13
   rx_pin:
-    number: 3
+    number: 3  # RX
     inverted: true
     mode: INPUT
   baud_rate: 9600
