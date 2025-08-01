@@ -4,7 +4,9 @@ import esphome.config_validation as cv
 from esphome.const import (
     CONF_ID,
     STATE_CLASS_MEASUREMENT,
-    UNIT_MINUTE
+    UNIT_MINUTE,
+    DEVICE_CLASS_DURATION,
+    DEVICE_CLASS_MOISTURE
 )
 
 from . import CONF_ELECTROLUX_DRYER_MACS_ID, ElectroluxDryerMacsComponent
@@ -28,15 +30,18 @@ CONFIG_SCHEMA = cv.Schema(
             unit_of_measurement=UNIT_MINUTE,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
+            device_class=DEVICE_CLASS_DURATION,
         ),
         cv.Optional(CONF_START_DELAY_TIME): sensor.sensor_schema(
             unit_of_measurement=UNIT_MINUTE,
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
+            device_class=DEVICE_CLASS_DURATION,
         ),
         cv.Optional(CONF_PROGRAM_DRYNESS_LEVEL): sensor.sensor_schema(
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
+            device_class=DEVICE_CLASS_MOISTURE,
         ),
         cv.Optional(CONF_SELECTED_PROGRAM_NUMBER): sensor.sensor_schema(
             accuracy_decimals=0,
