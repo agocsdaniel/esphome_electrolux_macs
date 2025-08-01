@@ -26,6 +26,19 @@ static const uint8_t MACS_DRYER_STATE_DRYING = 0x02;
 static const uint8_t MACS_DRYER_STATE_PAUSED = 0x04;
 
 
+std::string print_vector_hex(std::vector<uint8_t> bytes) {
+  std::string res;
+  size_t len = bytes.size();
+  char buf[5] = {0};
+  for (size_t i = 0; i < len; i++) {
+    if (i > 0) res += ' ';
+    sprintf(buf, "%02X", bytes[i]);
+    res += buf;
+  }
+  return res;
+}
+
+
 void ElectroluxDryerMacsComponent::setup() {}
 
 void ElectroluxDryerMacsComponent::loop() {
@@ -60,7 +73,6 @@ void ElectroluxDryerMacsComponent::loop() {
         if (this->data_.size() == 4)
           this->data_count_ = c;
         if ((this->data_.size() > 4) and (data_.size() == this->data_count_ + 5)) {
-          // ESP_LOGD(TAG, "Received MSG %s", print_vector_hex(this->data_).c_str());
           this->decode_data_(this->data_);
           this->data_.clear();
           this->receiving_ = false;
@@ -83,6 +95,8 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
   uint8_t checksum_ = frame[4 + length_]; // Last byte
   
   // TODO: Check checksum
+
+  ESP_LOGD(TAG, "Received MSG from %X, to %X, data: %s", source_, target_, print_vector_hex(data).c_str());
 
   uint8_t msg_type_ = data[0];
   uint16_t tmp_ = 0;
