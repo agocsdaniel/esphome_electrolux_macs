@@ -124,9 +124,10 @@ Below all the numbers are purely the data field inside the message frame. All he
 51 - change state
    00 
       60 00 80 1B 03 - start drying
+      60 00 02 1B 03 - start drying (program 1, delicate)
       62 - pause drying
       7D 
-         04 - sent after power up
+         04 - sent after power up or timeout
          08 - sent when pressing power button
          00 - * sent twice with this but with the same other parameters
             00 - power off
@@ -137,19 +138,48 @@ Below all the numbers are purely the data field inside the message frame. All he
 ```                                       
 52 - appliance state
    03 
+      01 - power on, not running
+      02 - drying
+      03 - drying finished (after anti-crease)
+      04 - pause
+      0B - power off
+         xx - drying phase
+         00 - drying not running (eiter not started or finished)
+         01 - drying started, heat phase
+         02 - drying, cooling phase
+         04 - drying, anti-crease phase (pre-finished)
+            00 
+               00 00 00 - drying
+               02 00 00 - mid drying after ~20 mins
+               04 00 00 - mid drying after ~40 mins
+               05 00 00 - mid drying after ~50 mins
+               07 00 00 - mid drying in last 10 minutes
+               00 00 04 - drying pre-finished, (time program, 10 mins), anti-crease?
+               05 00 05 - drying pre-finished, (cotton cupboard dry program), anti-crease, water, filter
+               07 00 05 - drying pre-finished, (cotton extra dry program), anti-crease?, water?, filter?
+               00 00 05 - drying finished, (cotton cupboard dry program), anti-crease, water, filter, after 30min anti-crease
+                        03 - power on, transient state
+                        01 - power on, ready
+                           00 00                    
+
       01 00 00 00 00 00 03 00 00 - power on, initializing ???
       01 00 00 00 00 00 01 00 00 - power on, ready, no program running
       02 01 00 00 00 00 01 00 00 - drying
+      02 04 00 00 00 04 01 00 00 - drying finished, (time program, 10 mins), anti-crease?, filter?
+      02 04 00 05 00 05 01 00 00 - drying finished, (cotton cupboard dry program), anti-crease, water, filter
+      02 04 00 07 00 05 01 00 00 - drying finished, (cotton extra dry program), anti-crease?, water?, filter?
+      03 00 00 00 00 05 01 00 00 - drying finished, (cotton cupboard dry program), anti-crease, water, filter, after 30min anti-crease
       04 01 00 00 00 00 01 00 00 - drying paused
-      0B 00 00 00 00 00 03 00 00 - power off
-```                                                    
+      0B 00 00 00 00 00 01 00 00 - stop drying, powering off
+      0B 00 00 00 00 00 03 00 00 - power off (sent after the previous line)
+```                     
 
 ```
 55 - program change response ? (only cotton, wool, time programs)
    03 
       00 
          00 
-            00 - ??? when time drying 10 min, wool
+            00 - ??? when time drying 10 min, wool, cotton extra dry
             02 - ??? when time drying 20 min or more
             03 - ??? when iron dry
             23 - ???
@@ -162,11 +192,11 @@ Below all the numbers are purely the data field inside the message frame. All he
                      83 - in wool program
                      8A - no heat maybe? when time drying 10 min
                      8B - ??? when time drying 20 min or more
-                        02
-                           00
-                              00 - program time as specified in program
-                              0A - program time 10 minutes
-                              xx - program time in minutes
+                        00 - ???
+                        02 - ???
+                           00 00 - program time as specified in program
+                           00 0A - program time 10 minutes
+                           xx xx - program time in minutes
                                  06 - program 6
 ```
 
@@ -175,7 +205,7 @@ Below all the numbers are purely the data field inside the message frame. All he
    03
       00 
          00 0A - time 10 minutes
-         00 00 - display turn on, empty
+         00 00 - display turn on, empty or 0 minutes
          FF FF - display turn off
 ```
 
