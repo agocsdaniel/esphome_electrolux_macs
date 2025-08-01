@@ -82,6 +82,8 @@ binary_sensor:
       name: "Drying"
     delicate_mode:
       name: "Delicate mode"
+    heating:
+      name: "Heating"
 
 mapping:
   - id: dryer_program_names

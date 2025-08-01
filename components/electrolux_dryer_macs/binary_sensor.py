@@ -5,6 +5,7 @@ from esphome.const import (
     CONF_ID,
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_RUNNING,
+    DEVICE_CLASS_HEAT
 )
 
 from . import CONF_ELECTROLUX_DRYER_MACS_ID, ElectroluxDryerMacsComponent
@@ -12,11 +13,13 @@ from . import CONF_ELECTROLUX_DRYER_MACS_ID, ElectroluxDryerMacsComponent
 CONF_POWERED_ON = "powered_on"
 CONF_RUNNING = "running"
 CONF_DELICATE_MODE = "delicate_mode"
+CONF_HEATING = "heating"
 
 TYPES = [
     CONF_POWERED_ON,
     CONF_RUNNING,
-    CONF_DELICATE_MODE
+    CONF_DELICATE_MODE,
+    CONF_HEATING
 ]
 
 CONFIG_SCHEMA = cv.All(
@@ -26,6 +29,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_POWERED_ON): binary_sensor.binary_sensor_schema(device_class=DEVICE_CLASS_POWER),
             cv.Optional(CONF_RUNNING): binary_sensor.binary_sensor_schema(device_class=DEVICE_CLASS_RUNNING),
             cv.Optional(CONF_DELICATE_MODE): binary_sensor.binary_sensor_schema(),
+            cv.Optional(CONF_HEATING): binary_sensor.binary_sensor_schema(device_class=DEVICE_CLASS_HEAT),
         }
     ).extend(cv.COMPONENT_SCHEMA)
 )

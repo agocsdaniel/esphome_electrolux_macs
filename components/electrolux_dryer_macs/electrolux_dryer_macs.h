@@ -32,6 +32,7 @@ class ElectroluxDryerMacsComponent : public Component, public uart::UARTDevice {
   SUB_BINARY_SENSOR(powered_on)
   SUB_BINARY_SENSOR(running)
   SUB_BINARY_SENSOR(delicate_mode)
+  SUB_BINARY_SENSOR(heating)
 #endif
 
   void setup() override;

@@ -26,6 +26,11 @@ static const uint8_t MACS_DRYER_STATE_DRYING = 0x02;
 static const uint8_t MACS_DRYER_STATE_FINISHED = 0x03;
 static const uint8_t MACS_DRYER_STATE_PAUSED = 0x04;
 
+static const uint8_t MACS_DRYER_DRYING_PHASE_IDLE = 0x0B;
+static const uint8_t MACS_DRYER_DRYING_PHASE_HEATING = 0x01;
+static const uint8_t MACS_DRYER_DRYING_PHASE_COOLING = 0x02;
+static const uint8_t MACS_DRYER_DRYING_PHASE_ANTI_CREASE = 0x04;
+
 
 std::string print_vector_hex(std::vector<uint8_t> bytes) {
   std::string res;
@@ -120,6 +125,7 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(0);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(0);
           if (this->delicate_mode_binary_sensor_) this->delicate_mode_binary_sensor_->publish_state(0);
+          if (this->heating_binary_sensor_) this->heating_binary_sensor_->publish_state(0);
 #endif
 #ifdef USE_SENSOR
           if (this->remaining_time_sensor_) this->remaining_time_sensor_->publish_state(NAN);
@@ -134,12 +140,14 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
 #ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(1);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(0);
+          if (this->heating_binary_sensor_) this->heating_binary_sensor_->publish_state(0);
 #endif
           break;
         case MACS_DRYER_STATE_DRYING:
 #ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(1);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(1);
+          if (this->heating_binary_sensor_) this->heating_binary_sensor_->publish_state(data[3] == MACS_DRYER_DRYING_PHASE_HEATING);
 #endif
           break;
         default:
