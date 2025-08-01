@@ -157,7 +157,7 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
       
     case MACS_MESSAGE_TYPE_DRYER_PROGRAM_SET:
 #ifdef USE_SENSOR
-      if (this->program_dryness_level_sensor_) this->program_dryness_level_sensor_->publish_state((float) (data[2] && 0x0F));
+      if (this->program_dryness_level_sensor_) this->program_dryness_level_sensor_->publish_state((float) (data[2] & 0x0F));
       if (this->start_delay_time_sensor_) this->start_delay_time_sensor_->publish_state((float) encode_uint16(0, data[7])*30);
       if (this->selected_program_number_sensor_) this->selected_program_number_sensor_->publish_state((float) data[9]);
 #endif
