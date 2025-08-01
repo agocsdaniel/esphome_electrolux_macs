@@ -118,7 +118,7 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
 #ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(0);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(0);
-          if (this->delicate_mode_binary_sensor_) this->delicate_mode_binary_sensor_->publish_state(NAN);
+          if (this->delicate_mode_binary_sensor_) this->delicate_mode_binary_sensor_->publish_state(0);
 #endif
 #ifdef USE_SENSOR
           if (this->remaining_time_sensor_) this->remaining_time_sensor_->publish_state(NAN);
