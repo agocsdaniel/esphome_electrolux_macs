@@ -5,7 +5,10 @@ from esphome.const import (
     CONF_ID,
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_RUNNING,
-    DEVICE_CLASS_HEAT
+    DEVICE_CLASS_HEAT,
+    ICON_FLOWER,
+    ICON_RADIATOR,
+    ICON_WEATHER_WINDY
 )
 
 from . import CONF_ELECTROLUX_DRYER_MACS_ID, ElectroluxDryerMacsComponent
@@ -22,17 +25,25 @@ TYPES = [
     CONF_HEATING
 ]
 
-CONFIG_SCHEMA = cv.All(
-    cv.Schema(
-        {
-            cv.GenerateID(CONF_ELECTROLUX_DRYER_MACS_ID): cv.use_id(ElectroluxDryerMacsComponent),
-            cv.Optional(CONF_POWERED_ON): binary_sensor.binary_sensor_schema(device_class=DEVICE_CLASS_POWER),
-            cv.Optional(CONF_RUNNING): binary_sensor.binary_sensor_schema(device_class=DEVICE_CLASS_RUNNING),
-            cv.Optional(CONF_DELICATE_MODE): binary_sensor.binary_sensor_schema(),
-            cv.Optional(CONF_HEATING): binary_sensor.binary_sensor_schema(device_class=DEVICE_CLASS_HEAT),
-        }
-    ).extend(cv.COMPONENT_SCHEMA)
-)
+CONFIG_SCHEMA = cv.Schema(
+    {
+        cv.GenerateID(CONF_ELECTROLUX_DRYER_MACS_ID): cv.use_id(ElectroluxDryerMacsComponent),
+        cv.Optional(CONF_POWERED_ON): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_POWER
+        ),
+        cv.Optional(CONF_RUNNING): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_RUNNING,
+            icon=ICON_WEATHER_WINDY
+        ),
+        cv.Optional(CONF_DELICATE_MODE): binary_sensor.binary_sensor_schema(
+            icon=ICON_FLOWER
+        ),
+        cv.Optional(CONF_HEATING): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_HEAT, 
+            icon=ICON_RADIATOR
+        ),
+    }
+).extend(cv.COMPONENT_SCHEMA)
 
 
 async def setup_conf(config, key, hub):

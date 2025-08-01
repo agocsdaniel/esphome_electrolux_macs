@@ -3,6 +3,7 @@ from esphome.components import sensor
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_ID,
+    ICON_TIMER,
     STATE_CLASS_MEASUREMENT,
     UNIT_MINUTE,
     DEVICE_CLASS_DURATION,
@@ -31,6 +32,7 @@ CONFIG_SCHEMA = cv.Schema(
             accuracy_decimals=0,
             state_class=STATE_CLASS_MEASUREMENT,
             device_class=DEVICE_CLASS_DURATION,
+            icon=ICON_TIMER,
         ),
         cv.Optional(CONF_START_DELAY_TIME): sensor.sensor_schema(
             unit_of_measurement=UNIT_MINUTE,
