@@ -23,6 +23,7 @@ static const uint8_t MACS_MESSAGE_TYPE_DRYER_HEARTBEAT = 0x5F;
 static const uint8_t MACS_DRYER_STATE_STANDBY = 0x0B;
 static const uint8_t MACS_DRYER_STATE_IDLE = 0x01;
 static const uint8_t MACS_DRYER_STATE_DRYING = 0x02;
+static const uint8_t MACS_DRYER_STATE_FINISHED = 0x03;
 static const uint8_t MACS_DRYER_STATE_PAUSED = 0x04;
 
 
@@ -129,6 +130,7 @@ void ElectroluxDryerMacsComponent::decode_data_(std::vector<uint8_t> frame) {
           break;
         case MACS_DRYER_STATE_IDLE:
         case MACS_DRYER_STATE_PAUSED:
+        case MACS_DRYER_STATE_FINISHED:
 #ifdef USE_BINARY_SENSOR
           if (this->powered_on_binary_sensor_) this->powered_on_binary_sensor_->publish_state(1);
           if (this->running_binary_sensor_) this->running_binary_sensor_->publish_state(0);
