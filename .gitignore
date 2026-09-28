@@ -1,5 +1,7 @@
 *
+!*/
 !*.md
 !components/**
+!tests/**
 !example_*.yaml
 *.pyc

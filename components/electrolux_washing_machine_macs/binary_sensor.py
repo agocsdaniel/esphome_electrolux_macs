@@ -6,6 +6,8 @@ from esphome.const import (
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_RUNNING,
     DEVICE_CLASS_DOOR,
+    DEVICE_CLASS_MOISTURE,
+    DEVICE_CLASS_MOVING,
 )
 
 from . import CONF_ELECTROLUX_WASHING_MACHINE_MACS_ID, ElectroluxWashingMachineMacsComponent
@@ -18,6 +20,12 @@ CONF_STAIN_WASH = "stain_wash"
 CONF_EXTRA_RINSE = "extra_rinse"
 CONF_SOFT_PLUS = "soft_plus"
 CONF_EASY_IRON = "easy_iron"
+CONF_ANTI_CREASE = "anti_crease"
+CONF_WASHING_ENABLED = "washing_enabled"
+CONF_DRAIN_PUMP = "drain_pump"
+CONF_WATER_IN_DRUM = "water_in_drum"
+CONF_DRUM_TURNING = "drum_turning"
+CONF_DOOR_OPEN = "door_open"
 
 TYPES = [
     CONF_POWERED_ON,
@@ -28,6 +36,12 @@ TYPES = [
     CONF_EXTRA_RINSE,
     CONF_SOFT_PLUS,
     CONF_EASY_IRON,
+    CONF_ANTI_CREASE,
+    CONF_WASHING_ENABLED,
+    CONF_DRAIN_PUMP,
+    CONF_WATER_IN_DRUM,
+    CONF_DRUM_TURNING,
+    CONF_DOOR_OPEN,
 ]
 
 CONFIG_SCHEMA = cv.Schema(
@@ -51,6 +65,23 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_SOFT_PLUS): binary_sensor.binary_sensor_schema(
         ),
         cv.Optional(CONF_EASY_IRON): binary_sensor.binary_sensor_schema(
+        ),
+        cv.Optional(CONF_ANTI_CREASE): binary_sensor.binary_sensor_schema(
+        ),
+        cv.Optional(CONF_WASHING_ENABLED): binary_sensor.binary_sensor_schema(
+        ),
+        cv.Optional(CONF_DRAIN_PUMP): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_RUNNING,
+        ),
+        cv.Optional(CONF_WATER_IN_DRUM): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_MOISTURE,
+        ),
+        cv.Optional(CONF_DRUM_TURNING): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_MOVING,
+        ),
+        # EW8W261B only
+        cv.Optional(CONF_DOOR_OPEN): binary_sensor.binary_sensor_schema(
+            device_class=DEVICE_CLASS_DOOR,
         ),
     }
 ).extend(cv.COMPONENT_SCHEMA)

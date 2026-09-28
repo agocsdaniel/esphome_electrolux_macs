@@ -25,83 +25,44 @@ void ElectroluxMacsComponent::setup() {}
 void ElectroluxMacsComponent::loop() {
   const uint32_t now = App.get_loop_component_start_time();
   
-  if (this->receiving_ && (now - this->last_transmission_ >= this->receive_timeout_)) {
+  if (this->framer_.receiving() && (now - this->last_transmission_ >= this->receive_timeout_)) {
     ESP_LOGW(TAG, "Last transmission too long ago. Reset RX index.");
-    this->data_.clear();
-    this->receiving_ = false;
+    this->framer_.reset();
   }
   
   if (available()) this->last_transmission_ = now;
   
+  std::vector<MacsFrame> frames;
   while (available()) {
     uint8_t c;
     read_byte(&c);
-    if (!this->receiving_) {
-      if (c != MACS_MESSAGE_MARKER && c != MACS_ACK_MARKER)
-        continue;
-      this->receiving_ = true;
-    }
-    this->data_.push_back(c);
-    
-    switch (this->data_[0]) {
-      case MACS_ACK_MARKER:
-        if (this->data_.size() == 3) {
-          this->data_.clear();
-          this->receiving_ = false;
-        }
-        break;
-      case MACS_MESSAGE_MARKER:
-        if (this->data_.size() == 4)
-          this->data_count_ = c;
-        if ((this->data_.size() > 4) and (data_.size() == this->data_count_ + 5)) {
-          this->process_data_(this->data_);
-          this->data_.clear();
-          this->receiving_ = false;
-        }
-        break;
-    }
-
+    this->framer_.feed(c, frames);
   }
+  for (auto &frame : frames) this->process_data_(frame);
 }
 
-uint8_t ElectroluxMacsComponent::calculate_checksum_(std::vector<uint8_t> frame) {
-	uint8_t checksum = 0;
-	size_t len = frame.size();
-	for (size_t i = 0; i < len - 1; i++)
-	{
-		checksum = checksum ^ frame[i];
-	}
-	return checksum;
-}
-
-void ElectroluxMacsComponent::process_data_(std::vector<uint8_t> frame) {
-	uint8_t marker_ = frame[0];
-	uint8_t target_ = frame[1];
-	uint8_t source_ = frame[2];
-	uint8_t length_ = frame[3];
+void ElectroluxMacsComponent::process_data_(const MacsFrame &frame) {
+	const std::vector<uint8_t> &bytes = frame.bytes;
+	uint8_t target_ = bytes[1];
+	uint8_t source_ = bytes[2];
+	uint8_t length_ = bytes[3];
 
 	if (length_ == 0) return;
-	if (5 + length_ < frame.size()) return;
-	std::vector<uint8_t> data(&frame[4], &frame[4 + length_]);
+	std::vector<uint8_t> data(&bytes[4], &bytes[4 + length_]);
 
 	ESP_LOGD(TAG, "Received MSG from %X, to %X, data: %s", source_, target_, print_vector_hex(data).c_str());
 
-	if (this->verify_checksum_) {
-		uint8_t checksum_ = frame[4 + length_];
-		uint8_t checksum_calc_ = this->calculate_checksum_(frame);
-		if (checksum_ != checksum_calc_) {
-			ESP_LOGW(TAG, "Checksum error (%X != %X), skipping 1 frame", checksum_, checksum_calc_);
-			return;
-		}
+	if (!frame.checksum_ok) {
+		ESP_LOGW(TAG, "Checksum error (%X != %X), skipping 1 frame", bytes.back(), macs_checksum(bytes));
+		return;
 	}
 	
 	this->decode_data_(target_, source_, data);
 }
 
-
 void ElectroluxMacsComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  Receive timeout: %d", this->receive_timeout_);
-  ESP_LOGCONFIG(TAG, "  Verify checksum: %s", this->verify_checksum_ ? "true" : "false");
+  ESP_LOGCONFIG(TAG, "  Verify checksum: %s", this->framer_.verify_checksum ? "true" : "false");
   check_uart_settings(9600, 1, esphome::uart::UART_CONFIG_PARITY_EVEN, 8);
 }
 

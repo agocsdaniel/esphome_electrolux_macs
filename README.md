@@ -14,11 +14,15 @@ Tested compatible models:
 |-----------------|-------------------|----------------------|---------------------|
 | Electrolux      | EDC2086GDW        | Dryer                |                     |
 | Electrolux      | EW6SN347SHI       | Washing machine      |                12.2 |
+| Electrolux      | EW8W261B          | Washer-dryer         |                     |
 
 
 If you have access and motivation to add new devices, feel free to open an issue with your findings. Please don't make requests without at least serial dumps, I won't buy a dryer just to help you.
 
 To check what infos I've found, look at FINDINGS.md
+
+For the EW8W261B washer-dryer, set `model: EW8W261B` and `motor_drum_ratio: 10.5` (see "EW8W261B washer-dryer" in `EWX FINDINGS.md`) and see `example_electrolux_ew8w261b_xiao_esp32c5.yaml`.
+The pure decoding helpers have a host test: `g++ -std=c++17 -I components tests/decode_test.cpp -o /tmp/decode_test && /tmp/decode_test`, and so does the frame parser: `g++ -std=c++17 -I components tests/framer_test.cpp -o /tmp/framer_test && /tmp/framer_test`.
 
 ### Connection to the dryer
 

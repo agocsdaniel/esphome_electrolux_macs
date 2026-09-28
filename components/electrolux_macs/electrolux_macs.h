@@ -3,6 +3,7 @@
 #include "esphome/core/log.h"
 #include "esphome/core/defines.h"
 #include "esphome/components/uart/uart.h"
+#include "framer.h"
 
 #include <vector>
 
@@ -51,21 +52,17 @@ class ElectroluxMacsComponent : public Component, public uart::UARTDevice {
   
   // float get_setup_priority() const override { return esphome::setup_priority::HARDWARE_LATE; }
 
-  void set_verify_checksum(bool verify_checksum) { this->verify_checksum_ = verify_checksum; }
+  void set_verify_checksum(bool verify_checksum) { this->framer_.verify_checksum = verify_checksum; }
   void set_receive_timeout(uint32_t receive_timeout) { this->receive_timeout_ = receive_timeout; }
 
   protected:
-  void process_data_(std::vector<uint8_t> frame);
-  uint8_t calculate_checksum_(std::vector<uint8_t> frame);
+  void process_data_(const MacsFrame &frame);
   virtual void decode_data_(uint8_t target, uint8_t source, std::vector<uint8_t> data);
   
-  std::vector<uint8_t> data_;
-  bool receiving_{false};
-  uint8_t data_count_{0};
+  MacsFramer framer_;
   uint32_t last_transmission_{0};
   
   uint32_t receive_timeout_{200};
-  bool verify_checksum_{true};
   std::string print_vector_hex(std::vector<uint8_t> bytes);
 
 };

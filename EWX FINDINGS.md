@@ -373,3 +373,64 @@ C9 - from inverter
    21 25 15 12
 ```
 
+
+## EW8W261B washer-dryer (PerfectCare 800)
+
+Captured on the bus between controller `21` and front panel `2A`, each value checked against the display.
+Indexes are into `data` (`data[0]` = message type).
+
+Program set frame (`50 03 ...`):
+
+| Byte | Bits | Meaning |
+|------|------|---------|
+| `[2]` | | wash temperature, °C |
+| `[3]` | `0x7F` | spin speed / 50 |
+| `[3]` | `0x80` | washing off (dry only); `[4]` `0x01` always changes together with it |
+| `[5]` | `0x01` | anti-crease |
+| `[5]` | `0x20` | Time Manager level 1 |
+| `[6]` | `0x04` / `0x10` / `0x20` | stain / extra rinse / soft plus (same as EWX14) |
+| `[7]` | `0x80` | pre-wash (same as EWX14) |
+| `[7]` | `0x1B` | Time Manager: `01` = 5 bars, `02` = 4, `08` = 3, `10` = 2, `00` = 1 (with `[5]` `0x20`) |
+| `[8]` | `0x80` | drying on |
+| `[8]` | `0x40` | auto dry (otherwise timed dry) |
+| `[8]` | `0x03` | dryness level: `0` = extra dry, `1` = cupboard dry, `2` = iron dry |
+| `[9]` | | timed dry minutes (+5 per button press) |
+| `[11]` | | start delay, x30 min (`[9]` on EWX14) |
+| `[12]` | | program = position of the selector, 1-based |
+
+Time Manager is only offered on programs 1-3 and 6 (FreshScent, where `[4]` `0x80`/`0x40`/`0x20` = 3/2/1 bars). There is no availability bit: other programs still send default `[7]` values (Sportswear `10`, OneGo 4h `08`), so the level is ignored there.
+
+`56 03 04 hh ll xx yy`: `hh ll` is the weighed laundry in grams (500 g steps, same as the display; `FFFF` after a cycle), `xx` looks like the program's maximum load in kg x10 (Cotton `64`, Synthetics `28`, FreshScent `0A`, OneGo 4h `32`). The controller sends it every time the weight changes while idle; a `56 03 08 00` follows each update.
+On Cotton the program time follows the weight in 1 kg steps (119 min empty, 132 min at 4 kg, 192 min at 4.5 kg, 233 min at 10 kg), with no hysteresis.
+
+The OneGo programs (13, 14) wash and dry with drying fixed by the program; `[8]` is `81` on OneGo 4h and `91` on OneGo 1h, so it doesn't tell them apart from timed drying. `[8]` `0x10` is also set on Synthetics, Wool and Sportswear with drying off; its meaning is unknown.
+
+State frame (`52 00 ...`), checked over a full OneGo 1h wash + dry cycle:
+
+| Byte | Value / bits | Meaning |
+|------|--------------|---------|
+| `[2]` | `01` `02` `03` `04` `06` `08` `09` `0B` | idle, running, finished, paused, waiting for door unlock, delayed start, error, off (same as EWX14) |
+| `[3]` | `02` `03` `04` `05` `08` | wash, rinse, spin, **drying** (`05` is new), **anti-crease** (`08`: after the spin of a Cotton cycle, remaining time 0, anti-crease option on, door still locked) |
+| `[4]` | `08` `10` `20` | changes within a phase: early spin, near the end of drying, finished; meaning unknown |
+| `[5]` | `0x01` | door locked (EWX14 code reads bits 0-1 clear as locked; inverted here) |
+| `[5]` | `0x02` | set for about a second while the door locks or unlocks |
+| `[5]` | `0x04` | drum turning; follows the inverter speed |
+| `[5]` | `0x08` | door open (seen on every open and close with the machine on) |
+| `[5]` | `0x20` | water in the drum: set after each fill, cleared by the following drain |
+| `[7]` | `0x80` | drain pump: pulses at every drain and through the spin |
+
+The inverter (`25`) frame `12 03` matches EWX14: `[2..3]` & 0x7FFF motor rpm, `[6]` water temperature (rose to the 30 °C setpoint while washing), `[19..20]` signed target rpm.
+The max target during a 1200 rpm spin was 12600 motor rpm, so the motor to drum ratio is 10.5.
+
+Delayed start (Cotton, 1 h delay): Start sends `52` state `08` (running binary on, door locks), and the countdown comes in `56 03 01 hh ll` in 10 s units (`0168` = 60 min, down by about 6 a minute). The controller keeps counting down after the delay is cancelled, even with the machine off, so the countdown only means something in state `08`.
+
+Start with the door open: state `09` and alarm frame `57 00 41 41 F4 F4`, read as E40 (door not closed). The next Start with the door closed clears it (`57 00 00 41 F4 F4`; `41` stays in the next byte, which looks like the alarm history).
+
+With the machine off (state `0B`), every door open and close starts with a frame cut short after 5 data bytes, followed right away by the full frame sent again. A parser that trusts the length byte reads the start of the next frame as the rest of the cut one (`52 00 0B 00 00 C9 2A 21 09`, the `C9 2A 21 09` being the header of the resent state frame), gets a bad checksum and loses the next frame too: 3 of 9 closes in one test. When the next frame is the `2B` heartbeat (`… C9 00 2B 03`), only the heartbeat is lost. The parser now starts again from a marker found inside a frame with a bad checksum, so the resent frame is read.
+
+Counters (`56 03 02` / `56 03 03`) before and after the same cycle: working hours x10 went up by 10, and three cycle counters (851, 819, 413) each went up by 1.
+
+Node `2B` identifies as `SWA000006` (`11 00` frame). It sends `20 03 ...` every 500 ms while the machine is on but idle and stops when a program starts.
+
+Differences from EWX14: start delay is at `[11]`, the door lock bit is inverted, the heartbeat is `5F 00`, and program numbers follow this model's selector.
+

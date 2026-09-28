@@ -1,0 +1,125 @@
+esphome:
+  name: electrolux-ew8w261b
+  friendly_name: "Electrolux Washer Dryer"
+
+external_components:
+  - source: github://agocsdaniel/esphome_electrolux_macs
+    components: [electrolux_macs, electrolux_washing_machine_macs]
+
+esp32:
+  board: esp32-c5-devkitc-1
+  variant: esp32c5
+  flash_size: 8MB
+  framework:
+    type: esp-idf
+
+# Keep UART0 free, log over USB
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: ""
+  password: ""
+
+status_led:
+  pin: GPIO27   # XIAO user LED
+
+# Listen only: MACS data (5V, inverted) through a 4k7/10k divider to D10
+uart:
+  id: uart_macs
+  rx_pin:
+    number: GPIO10   # XIAO D10
+    inverted: true
+  baud_rate: 9600
+  parity: EVEN
+
+electrolux_washing_machine_macs:
+  uart_id: uart_macs
+  model: EW8W261B
+  motor_drum_ratio: 10.5
+
+sensor:
+  - platform: electrolux_washing_machine_macs
+    selected_program_number:
+      name: "Program number"
+      on_value:
+        - text_sensor.template.publish:
+            id: program
+            state: !lambda |-
+              // selector positions 1-14
+              static const char *const N[] = {"", "Cotton", "Cotton Eco", "Synthetics",
+                "Delicate", "Wool", "FreshScent", "Spin/Drain", "Rinse", "Machine Clean",
+                "Sportswear", "Outdoor", "Denim", "OneGo 4h 5kg", "OneGo 1h 1kg"};
+              if (std::isnan(x)) return std::string("");
+              int i = (int) x;
+              if (i == 0) return std::string("");  // sent at power on, before a program is set
+              if (i >= 1 && i <= 14) return std::string(N[i]);
+              return "Unknown " + to_string(i);
+    remaining_time:
+      name: "Remaining time"
+    start_delay_time:
+      name: "Start delay"
+    time_manager:
+      name: "Time Manager"
+    wash_temperature:
+      name: "Wash temperature"
+    spin_speed:
+      name: "Spin speed"
+    current_drum_speed:
+      name: "Drum speed"
+    target_drum_speed:
+      name: "Target drum speed"
+    current_water_temperature:
+      name: "Water temperature"
+    total_working_hours:
+      name: "Working hours"
+    total_cycles:
+      name: "Total cycles"
+    sub_phase:
+      name: "Sub-phase"
+    laundry_load:
+      name: "Laundry load"
+
+binary_sensor:
+  - platform: electrolux_washing_machine_macs
+    powered_on:
+      name: "Powered on"
+    running:
+      name: "Running"
+    door_locked:
+      name: "Door locked"
+    pre_wash_enabled:
+      name: "Pre-wash"
+    stain_wash:
+      name: "Stain"
+    extra_rinse:
+      name: "Extra rinse"
+    soft_plus:
+      name: "Soft plus"
+    anti_crease:
+      name: "Anti-crease"
+    washing_enabled:
+      name: "Washing enabled"
+    drain_pump:
+      name: "Drain pump"
+    water_in_drum:
+      name: "Water in drum"
+    drum_turning:
+      name: "Drum turning"
+
+text_sensor:
+  - platform: template
+    id: program
+    name: "Program"
+  - platform: electrolux_washing_machine_macs
+    active_alarm:
+      name: "Alarm"
+    phase:
+      name: "Phase"
+    drying_mode:
+      name: "Drying"
